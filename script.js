@@ -1,46 +1,65 @@
 const form = document.querySelector('#parking-form')
-const today = Date.now()
-let formIsValid = true // this is set as a global variable so it can be used in different functions
+const today = new Date(Date.now())
+let formIsValid  // this is set as a global variable so it can be used in different functions
 form.addEventListener('submit', validateForm)
 
 
 function validateForm (event) {
-        //validation methods 
+    event.preventDefault()
+    //removeErrorMessage() // if an error message is showing from a previous validation attempt
+    formIsValid = true // reset this each time you try to validate the form    
+    
+    //validation methods 
         
         // Validate the format of the credit card number.
         const credit_card_field = document.querySelector('#credit-card')
         console.log(credit_card_field.value)
-        // if (!validateCardNumber(credit_card_field.value)) {
-        //     credit_card_field.setCustomValidity("Invalid credit card number")
-        //     //formValid = false
-        // }
+        if (!validateCardNumber(credit_card_field.value)) {
+             credit_card_field.setCustomValidity("Invalid credit card number")
+             formIsValid = false
+         }
 
         // Expiration date must not be in the past.
         const expiration_date_field = document.querySelector('#expiration')
         console.log(expiration_date_field.value)
         const expiration_date = new Date(expiration_date_field.value)
-        // if (expiration_date < today) {
-        //     expiration_date_field.setCustomValidity("Expiration date must not be in the past")
-        // }
+        if (expiration_date < today) {
+            formIsValid = false
+            expiration_date_field.setCustomValidity("Expiration date must not be in the past")
+            event.preventDefault()
+        }
+        else {
+            expiration_date_field.setCustomValidity("");
+        }
         
         // Car year cannot be in the future.
         const car_year_field = document.querySelector('#car-year')
         console.log(car_year_field.value)
-        // if (car_year.value > today.getYear()) {
-        //     car_year_field.setCustomValidity("Car year cannot be in the future")
-        // }
+        if (car_year_field.value > today.getFullYear()) {
+            formIsValid = false
+            car_year_field.setCustomValidity("Car year cannot be in the future")
+            event.preventDefault()
+        }
+        else {
+            car_year_field.setCustomValidity("");
+        }
         
         
         //create date object for parking date
         const daysField = document.querySelector('#days')
         const dateField = document.querySelector('#start-date')
-        const parking_date = new Date(dateField.value)
+        let parking_date = new Date(dateField.value)
         
         //Parking date must be in the future.
         console.log(parking_date)
-    //    if (parking_date <= today) {
-    //        dateField.setCustomValidity("Parking date must be in the future")
-    //    }      
+        if (parking_date <= today) {
+           dateField.setCustomValidity("Parking date must be in the future")
+           event.preventDefault()
+           formIsValid = false
+        }    
+        else {
+            dateField.setCustomValidity("");
+        }  
         
         // Calculate the cost of parking
         cost = calculateCost(daysField.value, parking_date)
@@ -48,18 +67,20 @@ function validateForm (event) {
         total_field.textContent = cost
         console.log(cost)
 
-       // (formIsValid) {
-            //     fetch('https://momentum-server.glitch.me/parking', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ formData: { name: 'Nathan' } }) // get this value from the form input!
-            //   })
-            //     .then(res => res.json())
-            //     .then(data => {
-            //       console.log(data)
-            //       // you can add a message to the DOM that says that the form was successfully submitted!
-            //     })
+        let name = document.querySelector('#name')
+       if (formIsValid) {
+                fetch('https://momentum-server.glitch.me/parking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ formData: { name: name } }) // get this value from the form input!
+              })
+                .then(res => res.json())
+                .then(data => {
+                  console.log(data)
+                  // you can add a message to the DOM that says that the form was successfully submitted!
+                })
         }
+    }
       
 
 
